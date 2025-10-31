@@ -15,8 +15,7 @@ const Classification = sequelize.define('Classification', {
     allowNull: false,
   },
 }, {
-  // Opções do modelo
-  timestamps: true, // Adiciona os campos createdAt e updatedAt automaticamente
+  timestamps: true,
 });
 
 export default Classification;

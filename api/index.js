@@ -3,10 +3,8 @@ import cors from 'cors';
 import 'dotenv/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// --- NOVO: Importações para o Banco de Dados ---
 import sequelize from './config/database.js';
 import Classification from './models/classificador.js';
-// ---------------------------------------------
 
 const app = express();
 app.use(cors());
@@ -15,7 +13,6 @@ app.use(express.json());
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
-// --- ROTA MODIFICADA: Agora ela também salva no banco ---
 app.post('/api/classificador', async (req, res) => {
   try {
     const { emailText } = req.body;
@@ -40,7 +37,7 @@ app.post('/api/classificador', async (req, res) => {
     const classification = lines[0].replace('Classificação: ', '').trim();
     const suggestedResponse = lines[1].replace('Resposta Sugerida: ', '').trim();
 
-    // --- NOVO: Salva o resultado no banco de dados ---
+    //Salva o resultado no banco de dados
     try {
       await Classification.create({
         emailText,
@@ -49,9 +46,7 @@ app.post('/api/classificador', async (req, res) => {
       });
     } catch (dbError) {
       console.error('Erro ao salvar no banco de dados:', dbError);
-      // Continua mesmo se der erro no DB, para não quebrar a experiência do usuário
     }
-    // ------------------------------------------------
 
     res.json({
       classification,
@@ -64,7 +59,7 @@ app.post('/api/classificador', async (req, res) => {
   }
 });
 
-// --- NOVA ROTA: Para buscar todas as classificações salvas ---
+// Para buscar todas as classificações salvas 
 app.get('/api/classificador', async (req, res) => {
   try {
     const classificacoes = await Classification.findAll({
@@ -76,11 +71,10 @@ app.get('/api/classificador', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar dados do banco.' });
   }
 });
-// ---------------------------------------------------------
 
 const PORT = process.env.PORT || 3001;
 
-// --- NOVO: Sincroniza o banco de dados antes de iniciar o servidor ---
+// Sincroniza o banco de dados antes de iniciar o servidor
 sequelize.sync().then(() => {
   app.listen(PORT, () => {
     console.log(`✅ Servidor rodando e escutando na porta http://localhost:${PORT}` );
